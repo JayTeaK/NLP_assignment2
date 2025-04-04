@@ -31,12 +31,13 @@ class RNN(nn.Module):
 
     def forward(self, inputs):
         # [to fill] obtain hidden layer representation (https://pytorch.org/docs/stable/generated/torch.nn.RNN.html)
-        _, hidden = 
+        output, hidden = self.rnn(inputs)
         # [to fill] obtain output layer representations
-
+        last_hidden_state = hidden[-1]
         # [to fill] sum over output 
-
+        output_scores = self.W(last_hidden_state)
         # [to fill] obtain probability dist.
+        predicted_vector = self.softmax(output_scores)
 
         return predicted_vector
 
@@ -80,7 +81,7 @@ if __name__ == "__main__":
     model = RNN(50, args.hidden_dim)  # Fill in parameters
     # optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
     optimizer = optim.Adam(model.parameters(), lr=0.01)
-    word_embedding = pickle.load(open('./word_embedding.pkl', 'rb'))
+    word_embedding = pickle.load(open('Data_Embedding/word_embedding.pkl', 'rb'))
 
     stopping_condition = False
     epoch = 0
@@ -115,7 +116,7 @@ if __name__ == "__main__":
                 vectors = [word_embedding[i.lower()] if i.lower() in word_embedding.keys() else word_embedding['unk'] for i in input_words ]
 
                 # Transform the input into required shape
-                vectors = torch.tensor(vectors).view(len(vectors), 1, -1)
+                vectors = torch.tensor(vectors, dtype=torch.float).view(len(vectors), 1, -1)
                 output = model(vectors)
 
                 # Get loss
@@ -156,7 +157,7 @@ if __name__ == "__main__":
             vectors = [word_embedding[i.lower()] if i.lower() in word_embedding.keys() else word_embedding['unk'] for i
                        in input_words]
 
-            vectors = torch.tensor(vectors).view(len(vectors), 1, -1)
+            vectors = torch.tensor(vectors, dtype=torch.float).view(len(vectors), 1, -1)
             output = model(vectors)
             predicted_label = torch.argmax(output)
             correct += int(predicted_label == gold_label)
